@@ -14,11 +14,18 @@ const adminRoutes = require('./routes/admin');
 const teamRoutes = require('./routes/teams');
 const socketAuth = require('./middleware/socketAuth');
 
+const DEFAULT_CLIENT_ORIGINS = 'http://localhost:3000';
+function parseAllowedOrigins() {
+  const raw = process.env.CLIENT_URL || DEFAULT_CLIENT_ORIGINS;
+  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+}
+const allowedOrigins = parseAllowedOrigins();
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: allowedOrigins,
     credentials: true
   }
 });
@@ -39,9 +46,9 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// CORS configuration
+// CORS configuration (CLIENT_URL: comma-separated list, e.g. https://app.vercel.app,http://localhost:3000)
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: allowedOrigins,
   credentials: true
 }));
 
