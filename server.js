@@ -21,6 +21,13 @@ function parseAllowedOrigins() {
 }
 const allowedOrigins = parseAllowedOrigins();
 
+const corsOptions = {
+  origin: allowedOrigins,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -36,10 +43,8 @@ const PORT = process.env.PORT || 5000;
 app.set('io', io);
 
 // CORS first so preflight (OPTIONS) and error responses always get Access-Control-* headers
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
 
 // Helmet can set Cross-Origin-Resource-Policy in a way that breaks cross-origin browser requests to this API
 app.use(helmet({ crossOriginResourcePolicy: false }));
