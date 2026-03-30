@@ -23,10 +23,11 @@ const allowedOrigins = parseAllowedOrigins();
 /** Manual CORS (reliable on Vercel serverless); mirrors setHeader + OPTIONS preflight pattern */
 function manualCors(req, res, next) {
   const requestOrigin = req.headers.origin;
-  if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
-    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  }
+  // if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+    res.setHeader("Access-Control-Allow-Origin", "https://marios-task-management.vercel.app");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  // }
   res.setHeader(
     'Access-Control-Allow-Methods',
     'GET,POST,PUT,PATCH,DELETE,OPTIONS'
