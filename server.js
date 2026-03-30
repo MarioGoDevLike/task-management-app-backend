@@ -2,7 +2,6 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
@@ -19,14 +18,26 @@ function parseAllowedOrigins() {
   const raw = process.env.CLIENT_URL || DEFAULT_CLIENT_ORIGINS;
   return raw.split(',').map((s) => s.trim()).filter(Boolean);
 }
-const allowedOrigins = "https://marios-task-management.vercel.app";
+const allowedOrigins = parseAllowedOrigins();
 
-const corsOptions = {
-  origin: allowedOrigins,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-};
+/** Manual CORS (reliable on Vercel serverless); mirrors setHeader + OPTIONS preflight pattern */
+function manualCors(req, res, next) {
+  const requestOrigin = req.headers.origin;
+  if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+  );
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -42,9 +53,7 @@ const PORT = process.env.PORT || 5000;
 // Make io available to routes
 app.set('io', io);
 
-// CORS first so preflight (OPTIONS) and error responses always get Access-Control-* headers
-app.options('*', cors(corsOptions));
-app.use(cors(corsOptions));
+app.use(manualCors);
 
 // Helmet can set Cross-Origin-Resource-Policy in a way that breaks cross-origin browser requests to this API
 app.use(helmet({ crossOriginResourcePolicy: false }));
