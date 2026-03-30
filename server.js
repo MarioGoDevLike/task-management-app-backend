@@ -19,7 +19,7 @@ function parseAllowedOrigins() {
   const raw = process.env.CLIENT_URL || DEFAULT_CLIENT_ORIGINS;
   return raw.split(',').map((s) => s.trim()).filter(Boolean);
 }
-const allowedOrigins = parseAllowedOrigins();
+const allowedOrigins = "https://marios-task-management.vercel.app";
 
 const corsOptions = {
   origin: allowedOrigins,
